@@ -1,71 +1,90 @@
-﻿using LolApi;
+﻿using log4net;
+using LolApi;
 using NameChecker.Properties;
 using System;
-using System.Globalization;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace NameChecker
 {
     internal class Program
     {
+        private const bool TEST = false;
+        private const int CHECK_POINTS = 1000;
+        private const int SAFE_EXIT = 0;
+        private const string API_KEY = "7d9c3a9f-7d14-4d86-8ef2-471f32243fa8";
         private const string APOSTROPHE = "'";
+        private const string NAMES_PATH = "Names.txt";
         private const string REGION = "na";
         private const string WORDS_PATH = "Words.txt";
-        private const string NAMES_PATH = "Names.txt";
-        private const int CHECK_POINTS = 100;
 
-        public static void Main(string[] args)
+        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        private static void Main(string[] args)
         {
-            string apiKey = Properties.Settings.Default.apiKey;
-            ParsedRequester parsedRequester = new ParsedRequester(apiKey);
+            Test();
+            ParsedRequester parsedRequester = new ParsedRequester(API_KEY);
 
             using (StreamReader streamReader = new StreamReader(WORDS_PATH))
             {
-                string wordsString = streamReader.ReadToEnd();
-                string[] words = Regex.Split(wordsString, Environment.NewLine);
-                Func<string, bool> minLen = word => word.Length >= Settings.Default.minLen;
-                Func<string, bool> maxLen = word => word.Length <= Settings.Default.maxLen;
-                Func<string, bool> noApostrophe = word => !word.Contains(APOSTROPHE);
-                words = words.Where(minLen).Where(maxLen).Where(noApostrophe).ToArray();
-                IOrderedEnumerable<string> sortedWords = words.OrderBy(x => x.Length).ThenBy(x => x);
-                StringBuilder stringBuilder = new StringBuilder();
-                int sortedWordsCount = sortedWords.Count();
+                File.Delete(NAMES_PATH);
+                IOrderedEnumerable<string> words = WordsFormatter.Format(
+                    Settings.Default.firstWord,
+                    Settings.Default.lastWord,
+                    streamReader.ReadToEnd());
+                int wordsCount = words.Count();
+                StringBuilder strBuilder = new StringBuilder();
 
-                for (int i = 0; i < sortedWordsCount; i++)
+                for (int i = 0; i < wordsCount; i++)
                 {
-                    string word = sortedWords.ElementAt(i);
+                    string word = words.ElementAt(i);
+
+                    if ((i % (wordsCount / CHECK_POINTS)) == 0)
+                    {
+                        Console.Clear();
+                        string logMsg = String.Format(
+                            "checkpoint: {0}/{1}, word: {2}",
+                            Convert.ToInt32(i * Convert.ToDouble(CHECK_POINTS) / wordsCount),
+                            CHECK_POINTS,
+                            word);
+                        Console.WriteLine(logMsg);
+                        log.Info(logMsg);
+                        File.AppendAllText(NAMES_PATH, strBuilder.ToString());
+                        strBuilder = new StringBuilder();
+                    }
 
                     try
                     {
                         if (!parsedRequester.CheckSummonerExists(word, REGION))
                         {
-                            stringBuilder.Append(String.Format("{0}{1}", word, Environment.NewLine));
-                        }
-
-                        if ((i % (sortedWordsCount / CHECK_POINTS)) == 0)
-                        {
-                            Console.Clear();
-                            Console.WriteLine("progress: {0}/{1}", i * CHECK_POINTS / sortedWordsCount, CHECK_POINTS);
+                            strBuilder.Append(String.Format("{0}{1}", word, Environment.NewLine));
                         }
                     }
                     catch (ServerUnavailableException)
                     {
-                        Console.WriteLine(String.Format(
-                            CultureInfo.InvariantCulture,
-                            "failed on {0} at {1:M/dd H:mm:ss} because the server was unavailable",
-                            word,
-                            DateTime.Now));
+                        log.InfoFormat("failed on {0} because the server was unavailable", word);
                         i--;
                     }
                 }
 
-                File.Delete(NAMES_PATH);
-                File.AppendAllText(NAMES_PATH, stringBuilder.ToString());
-                System.Diagnostics.Process.Start(NAMES_PATH);
+                File.AppendAllText(NAMES_PATH, strBuilder.ToString());
+                Process.Start(NAMES_PATH);
             }
+        }
+
+        private static void Test()
+        {
+            if (!TEST) return;
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            ParsedRequester requester = new ParsedRequester(API_KEY);
+            Console.WriteLine("god exists: {0}", requester.CheckSummonerExists("god", REGION));
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            Console.WriteLine("done");
+            Console.ReadLine();
+            Environment.Exit(SAFE_EXIT);
         }
     }
 }

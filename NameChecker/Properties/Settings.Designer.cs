@@ -25,28 +25,19 @@ namespace NameChecker.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("7d9c3a9f-7d14-4d86-8ef2-471f32243fa8")]
-        public string apiKey {
+        [global::System.Configuration.DefaultSettingValueAttribute("aa")]
+        public string firstWord {
             get {
-                return ((string)(this["apiKey"]));
+                return ((string)(this["firstWord"]));
             }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("2")]
-        public int minLen {
+        [global::System.Configuration.DefaultSettingValueAttribute("zzzzzzzzzzzzzzzz")]
+        public string lastWord {
             get {
-                return ((int)(this["minLen"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("16")]
-        public int maxLen {
-            get {
-                return ((int)(this["maxLen"]));
+                return ((string)(this["lastWord"]));
             }
         }
     }
