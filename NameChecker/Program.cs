@@ -16,7 +16,6 @@ namespace NameChecker
         private const int CHECK_POINTS = 1000;
         private const int SAFE_EXIT = 0;
         private const string API_KEY = "7d9c3a9f-7d14-4d86-8ef2-471f32243fa8";
-        private const string APOSTROPHE = "'";
         private const string NAMES_PATH = "Names.txt";
         private const string REGION = "na";
         private const string WORDS_PATH = "Words.txt";
@@ -31,10 +30,11 @@ namespace NameChecker
             using (StreamReader streamReader = new StreamReader(WORDS_PATH))
             {
                 File.Delete(NAMES_PATH);
-                IOrderedEnumerable<string> words = WordsFormatter.Format(
-                    Settings.Default.firstWord,
-                    Settings.Default.lastWord,
-                    streamReader.ReadToEnd());
+                string[] wordBounds = Console.ReadLine().Split(new char[] { ',' });
+                string firstWord = wordBounds.First();
+                string lastWord = wordBounds.Last();
+                log.InfoFormat("first word: {0}, last word: {1}", firstWord, lastWord);
+                IOrderedEnumerable<string> words = WordsFormatter.Format(firstWord, lastWord, streamReader.ReadToEnd());
                 int wordsCount = words.Count();
                 StringBuilder strBuilder = new StringBuilder();
 

@@ -22,23 +22,5 @@ namespace NameChecker.Properties {
                 return defaultInstance;
             }
         }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("aa")]
-        public string firstWord {
-            get {
-                return ((string)(this["firstWord"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("zzzzzzzzzzzzzzzz")]
-        public string lastWord {
-            get {
-                return ((string)(this["lastWord"]));
-            }
-        }
     }
 }
